@@ -22,6 +22,6 @@ public abstract class MDebugHud {
 
     @Inject(method = "getSystemInformation", at = @At("RETURN"))
     protected void onGetRightText(CallbackInfoReturnable<List<String>> info) {
-        //PresenceFootsteps.getInstance().debugHud.render(block, liquid, info.getReturnValue());
+        PresenceFootsteps.getInstance().debugHud.render(block, liquid, info.getReturnValue());
     }
 }

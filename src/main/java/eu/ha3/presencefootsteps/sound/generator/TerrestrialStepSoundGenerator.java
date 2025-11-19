@@ -22,7 +22,10 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ArmorItem;
 
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
 import java.util.List;
+import java.util.Map;
 
 class TerrestrialStepSoundGenerator implements StepSoundGenerator {
     // Footsteps
@@ -57,6 +60,26 @@ class TerrestrialStepSoundGenerator implements StepSoundGenerator {
     private final Modifier<TerrestrialStepSoundGenerator> modifier;
     protected final MotionTracker motionTracker = new MotionTracker(this);
     protected final AssociationPool associations;
+
+    // MethodHandle for accessing private attachments fields
+    private static final MethodHandle DIMENSIONS_ATTACHMENTS_GETTER;
+    private static final MethodHandle ATTACHMENTS_MAP_GETTER;
+
+    static {
+        MethodHandle dimensionsHandle = null;
+        MethodHandle attachmentsHandle = null;
+        try {
+            MethodHandles.Lookup lookup = MethodHandles.privateLookupIn(net.minecraft.world.entity.EntityDimensions.class, MethodHandles.lookup());
+            dimensionsHandle = lookup.findGetter(net.minecraft.world.entity.EntityDimensions.class, "attachments", net.minecraft.world.entity.EntityAttachments.class);
+
+            MethodHandles.Lookup attachmentsLookup = MethodHandles.privateLookupIn(net.minecraft.world.entity.EntityAttachments.class, MethodHandles.lookup());
+            attachmentsHandle = attachmentsLookup.findGetter(net.minecraft.world.entity.EntityAttachments.class, "attachments", Map.class);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        DIMENSIONS_ATTACHMENTS_GETTER = dimensionsHandle;
+        ATTACHMENTS_MAP_GETTER = attachmentsHandle;
+    }
 
     public TerrestrialStepSoundGenerator(LivingEntity entity, SoundEngine engine, Modifier<TerrestrialStepSoundGenerator> modifier) {
         this.entity = entity;
@@ -274,7 +297,7 @@ class TerrestrialStepSoundGenerator implements StepSoundGenerator {
                 playMultifoot(getOffsetMinus() + 0.4d, State.WANDER);
                 // 2 - 0.7531999805212d (magic number for vertical offset?)
             } else {
-                playSinglefoot(getOffsetMinus() + 0.4d, State.JUMP, isRightFoot);
+                playSinglefoot(getOffsetMinus() + 0.4d, State.JUMP);
                 // RUNNING JUMP
                 // Do not toggle foot:
                 // After landing sounds, the first foot will be same as the one used to jump.
@@ -292,7 +315,7 @@ class TerrestrialStepSoundGenerator implements StepSoundGenerator {
                 // Do not toggle foot:
                 // After landing sounds, the first foot will be same as the one used to jump.
             } else if (!stepThisFrame && !entity.isShiftKeyDown()) {
-                playSinglefoot(getOffsetMinus(), motionTracker.pickState(entity, State.CLIMB, State.CLIMB_RUN), isRightFoot);
+                playSinglefoot(getOffsetMinus(), motionTracker.pickState(entity, State.CLIMB, State.CLIMB_RUN));
                 if (!stepThisFrame) {
                     isRightFoot = !isRightFoot;
                 }
@@ -311,12 +334,23 @@ class TerrestrialStepSoundGenerator implements StepSoundGenerator {
             return;
         }
 
-        var attachments = entity.getType().getDimensions().attachments();
-        List<Vec3> vehicleAttachements = attachments.attachments.get(EntityAttachment.VEHICLE);
+        net.minecraft.world.entity.EntityAttachments entityAttachments;
+        Map<EntityAttachment, List<Vec3>> attachmentsMap = null;
+
+        try {
+            entityAttachments = (net.minecraft.world.entity.EntityAttachments) DIMENSIONS_ATTACHMENTS_GETTER.invokeExact(entity.getType().getDimensions());
+            if (entityAttachments != null) {
+                attachmentsMap = (Map<EntityAttachment, List<Vec3>>) ATTACHMENTS_MAP_GETTER.invokeExact(entityAttachments);
+            }
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
+
+        List<Vec3> vehicleAttachements = attachmentsMap != null ? attachmentsMap.get(EntityAttachment.VEHICLE) : null;
         Association assos = associations.findAssociation(BlockPos.containing(
-            entity.getX(),
-            entity.getY() - 0.1D - (entity.isPassenger() && vehicleAttachements != null && !vehicleAttachements.isEmpty() ? entity.getAgeScale() * -vehicleAttachements.getFirst().y : 0) - (entity.onGround() ? 0 : 0.25D),
-            entity.getZ()
+                entity.getX(),
+                entity.getY() - 0.1D - (entity.isPassenger() && vehicleAttachements != null && !vehicleAttachements.isEmpty() ? entity.getAgeScale() * -vehicleAttachements.getFirst().y : 0) - (entity.onGround() ? 0 : 0.25D),
+                entity.getZ()
         ), Solver.MESSY_FOLIAGE_STRATEGY);
 
         if (!assos.isSilent()) {
@@ -345,7 +379,7 @@ class TerrestrialStepSoundGenerator implements StepSoundGenerator {
         engine.getIsolator().acoustics().playStep(association, eventType, Options.EMPTY);
     }
 
-    protected void playSinglefoot(double verticalOffsetAsMinus, State eventType, boolean foot) {
+    protected void playSinglefoot(double verticalOffsetAsMinus, State eventType) {
         Association assos = associations.findAssociation(verticalOffsetAsMinus, isRightFoot);
 
         if (!assos.isResult()) {
