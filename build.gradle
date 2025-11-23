@@ -6,7 +6,7 @@ plugins {
 group = project.group
 description = project.displayname
 base.archivesName = project.name
-version = '1.21.1-1.12.0-beta.1'
+version = '1.21.2-1.12.0-beta.1'
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 

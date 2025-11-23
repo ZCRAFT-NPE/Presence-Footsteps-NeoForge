@@ -88,7 +88,7 @@ public class PFDebugHud {
                     PrimitiveLookup.getKey(state.getSoundType())));
             BlockPos above = pos.above();
             boolean hasRain = client.level.isRaining()
-                    && client.level.getBiome(above).value().getPrecipitationAt(above) == Biome.Precipitation.RAIN;
+                    && client.level.getBiome(above).value().getPrecipitationAt(above, above.getY())== Biome.Precipitation.RAIN;
             boolean hasLava = client.level.getBlockState(above).getFluidState().is(FluidTags.LAVA);
             boolean hasWater = client.level.isRainingAt(above)
                     || state.getFluidState().is(FluidTags.WATER)

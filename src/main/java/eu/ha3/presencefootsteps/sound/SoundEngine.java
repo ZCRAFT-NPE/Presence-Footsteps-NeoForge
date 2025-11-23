@@ -186,14 +186,15 @@ public class SoundEngine implements PreparableReloadListener {
         }
 
         return event.unwrap().right().filter(sound -> {
-            if (event == SoundEvents.PLAYER_SWIM
-                || event == SoundEvents.PLAYER_SPLASH
-                || event == SoundEvents.PLAYER_BIG_FALL
-                || event == SoundEvents.PLAYER_SMALL_FALL) {
+            if (event != null && (
+                    event.is(SoundEvents.PLAYER_SWIM.location()) ||
+                            event.is(SoundEvents.PLAYER_SPLASH.location()) ||
+                            event.is(SoundEvents.PLAYER_BIG_FALL.location()) ||
+                            event.is(SoundEvents.PLAYER_SMALL_FALL.location()))) {
                 return true;
             }
 
-            String[] name = sound.getLocation().getPath().split("\\.");
+            String[] name = sound.location().getPath().split("\\.");
             return name.length > 0
                     && "block".contentEquals(name[0])
                     && "step".contentEquals(name[name.length - 1]);
@@ -202,17 +203,11 @@ public class SoundEngine implements PreparableReloadListener {
 
     @Override
     public @NotNull CompletableFuture<Void> reload(PreparationBarrier sync, ResourceManager sender,
-                                                   ProfilerFiller serverProfiler, ProfilerFiller clientProfiler,
                                                    Executor serverExecutor, Executor clientExecutor) {
         return sync.wait(null).thenRunAsync(() -> {
-            clientProfiler.startTick();
-            clientProfiler.push("Reloading PF Sounds");
             reloadEverything(sender);
-            clientProfiler.pop();
-            clientProfiler.endTick();
         }, clientExecutor);
     }
-
     public void reloadEverything(ResourceManager manager) {
         shutdown();
         hasConfigurations = isolator.load(manager);

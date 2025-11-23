@@ -47,7 +47,7 @@ public class AcousticsPlayer implements AcousticLibrary {
             }
 
             soundPlayer.playSound(association.source(),
-                    soundType.getStepSound().getLocation().toString(),
+                    soundType.getStepSound().location().toString(),
                     soundType.getVolume() * 0.15F,
                     soundType.getPitch(),
                     options

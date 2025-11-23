@@ -1,6 +1,12 @@
 package eu.ha3.presencefootsteps.sound.generator;
 
+import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.EntityAttachment;
+import net.minecraft.world.entity.EquipmentTable;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.equipment.Equippable;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
@@ -362,20 +368,40 @@ class TerrestrialStepSoundGenerator implements StepSoundGenerator {
             isMessyFoliage = false;
         }
     }
-
     protected void playStep(Association association, State eventType) {
-        if (engine.getConfig().getEnabledFootwear()) {
-            if (entity.getItemBySlot(EquipmentSlot.FEET).getItem() instanceof ArmorItem bootItem) {
-                SoundsKey bootSound = engine.getIsolator().primitives().getAssociation(bootItem.getEquipSound().value(), Substrates.DEFAULT);
-                if (bootSound.isEmitter()) {
-                    engine.getIsolator().acoustics().playStep(association, eventType, Options.singular("volume_percentage", 0.5F));
-                    engine.getIsolator().acoustics().playAcoustic(entity, bootSound, eventType, Options.EMPTY);
-
-                    return;
-                }
-            }
+        if (!engine.getConfig().getEnabledFootwear()) {
+            engine.getIsolator().acoustics().playStep(association, eventType, Options.EMPTY);
+            return;
         }
 
+        ItemStack boots = entity.getItemBySlot(EquipmentSlot.FEET);
+        if (boots.isEmpty()) {
+            engine.getIsolator().acoustics().playStep(association, eventType, Options.EMPTY);
+            return;
+        }
+        Equippable equippable = boots.get(DataComponents.EQUIPPABLE);
+        if (equippable == null) {
+            engine.getIsolator().acoustics().playStep(association, eventType, Options.EMPTY);
+            return;
+        }
+        Holder<SoundEvent> equipSoundHolder = equippable.equipSound();
+        if (equipSoundHolder == null) {
+            engine.getIsolator().acoustics().playStep(association, eventType, Options.EMPTY);
+            return;
+        }
+
+        SoundsKey bootSound = engine.getIsolator()
+                .primitives()
+                .getAssociation(equipSoundHolder.value(),
+                        Substrates.DEFAULT);
+
+        if (bootSound.isEmitter()) {
+            engine.getIsolator().acoustics()
+                    .playStep(association, eventType, Options.singular("volume_percentage", 0.5F));
+            engine.getIsolator().acoustics()
+                    .playAcoustic(entity, bootSound, eventType, Options.EMPTY);
+            return;
+        }
         engine.getIsolator().acoustics().playStep(association, eventType, Options.EMPTY);
     }
 
