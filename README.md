@@ -1,4 +1,4 @@
-# Presence Footsteps [Forge]
+# Presence Footsteps [NeoForge]
 ![License](https://img.shields.io/github/license/Sollace/Presence-Footsteps)
 ![](https://img.shields.io/badge/api-forge-orange.svg)
 
