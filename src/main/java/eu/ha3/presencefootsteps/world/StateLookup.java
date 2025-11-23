@@ -71,7 +71,7 @@ public record StateLookup(Map<String, Bucket> substrates) implements Lookup<Bloc
             var group = block.defaultBlockState().getSoundType();
             if (group != null && group.getStepSound() != null) {
                 String substrate = String.format(Locale.ENGLISH, "%.2f_%.2f", group.volume, group.pitch);
-                groups.put(group.getStepSound().getLocation().toString() + "@" + substrate, group);
+                groups.put(group.getStepSound().location().toString() + "@" + substrate, group);
             }
 
             if (full || !contains(state)) {
@@ -101,7 +101,7 @@ public record StateLookup(Map<String, Bucket> substrates) implements Lookup<Bloc
         if (group.getStepSound() == null) {
             return "NO_SOUND";
         }
-        return group.getStepSound().getLocation().getPath();
+        return group.getStepSound().location().getPath();
     }
 
     private String getClassData(BlockState state) {
@@ -115,9 +115,12 @@ public record StateLookup(Map<String, Bucket> substrates) implements Lookup<Bloc
     }
 
     private String getTagData(BlockState state) {
-        return BuiltInRegistries.BLOCK.getTagNames().filter(state::is).map(TagKey::location).map(ResourceLocation::toString).collect(Collectors.joining(","));
+        return BuiltInRegistries.BLOCK.getTags()
+                .filter(tag -> state.is(tag.key()))
+                .map(tag -> tag.key().location())
+                .map(ResourceLocation::toString)
+                .collect(Collectors.joining(","));
     }
-
     private interface Bucket {
 
         Bucket EMPTY = state -> Key.NULL;

@@ -5,12 +5,13 @@ import eu.ha3.presencefootsteps.PFConfig;
 import eu.ha3.presencefootsteps.PresenceFootsteps;
 import eu.ha3.presencefootsteps.sound.SoundEngine;
 import net.minecraft.client.KeyMapping;
+import net.minecraft.resources.ResourceLocation;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.event.lifecycle.FMLConstructModEvent;
 import net.neoforged.fml.loading.FMLPaths;
+import net.neoforged.neoforge.client.event.AddClientReloadListenersEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
-import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.common.util.Lazy;
@@ -25,21 +26,21 @@ public final class NeoForgeEventSubscriber {
     public static void init(IEventBus modBus, Dist dist) {
         if (dist != Dist.CLIENT) return;
         modBus.addListener(NeoForgeEventSubscriber::onConstruct);
-        modBus.addListener(NeoForgeEventSubscriber::onRegisterClientReloadListeners);
         modBus.addListener(NeoForgeEventSubscriber::registerKeyBinding);
         NeoForge.EVENT_BUS.addListener(NeoForgeEventSubscriber::onClientTick);
+        modBus.addListener(NeoForgeEventSubscriber::onAddReloadListener);
     }
 
     private static void onConstruct(final FMLConstructModEvent event) {
         PresenceFootsteps.logger.info("Presence Footsteps starting");
-    }
-
-    private static void onRegisterClientReloadListeners(final RegisterClientReloadListenersEvent event) {
         final Path pfFolder = FMLPaths.CONFIGDIR.get().resolve(PresenceFootsteps.MOD_ID);
         PF.config = new PFConfig(pfFolder.resolve("userconfig.json"), PF);
         PF.config.load();
         PF.engine = new SoundEngine(PF.config);
-        event.registerReloadListener(PF.engine);
+    }
+
+    private static void onAddReloadListener(final AddClientReloadListenersEvent event) {
+        event.addListener(ResourceLocation.fromNamespaceAndPath(PresenceFootsteps.MOD_ID, "sound_engine"), PF.engine);
     }
 
     private static void registerKeyBinding(final RegisterKeyMappingsEvent event) {

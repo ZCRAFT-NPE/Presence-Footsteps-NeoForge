@@ -54,7 +54,7 @@ public class LocomotionLookup implements Index<Entity, Locomotion> {
         writer.each(BuiltInRegistries.ENTITY_TYPE, type -> {
             ResourceLocation id = EntityType.getKey(type);
             if (full || !contains(id)) {
-                if (type.create(Minecraft.getInstance().level) instanceof LivingEntity) {
+                if (LivingEntity.class.isAssignableFrom(type.getBaseClass())) {
                     writer.field(id.toString(), values.getOrDefault(id, Locomotion.NONE).name());
                 }
             }

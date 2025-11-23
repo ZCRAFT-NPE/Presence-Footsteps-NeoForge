@@ -11,7 +11,7 @@ import eu.ha3.presencefootsteps.util.JsonObjectWriter;
 public class PrimitiveLookup extends AbstractSubstrateLookup<SoundEvent> {
     @Override
     protected ResourceLocation getId(SoundEvent key) {
-        return key.getLocation();
+        return key.location();
     }
 
     @Override
@@ -29,6 +29,6 @@ public class PrimitiveLookup extends AbstractSubstrateLookup<SoundEvent> {
     }
 
     public static String getKey(SoundType group) {
-        return group.getStepSound().getLocation().toString() + "@" + getSubstrate(group);
+        return group.getStepSound().location().toString() + "@" + getSubstrate(group);
     }
 }
