@@ -22,7 +22,7 @@ public interface BlockReport {
         ChatComponent hud = client.gui.getChat();
         return CompletableFuture.supplyAsync(() -> {
             try {
-                Path loc = getUniqueFileName(FMLPaths.GAMEDIR.get().resolve("presencefootsteps"), baseName, ".json");
+                Path loc = getUniqueFileName(FMLPaths.GAMEDIR.get().resolve("presencefootsteps"), baseName);
                 Files.createDirectories(loc.getParent());
                 try (var writer = JsonObjectWriter.of(new JsonWriter(Files.newBufferedWriter(loc)))) {
                     reportable.writeToReport(full, writer, new Object2ObjectOpenHashMap<>());
@@ -31,24 +31,22 @@ public interface BlockReport {
             } catch (IOException e) {
                 throw new RuntimeException("Could not generate report", e);
             }
-        }, Util.ioPool()).thenAcceptAsync(loc -> {
-            hud.addMessage(Component.translatable("pf.report.save", Component.literal(loc.getFileName().toString()).withStyle(s -> s
-                    .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, loc.toString()))
-                    .applyFormat(ChatFormatting.UNDERLINE)))
+        }, Util.ioPool()).thenAcceptAsync(loc -> hud.addMessage(Component.translatable("pf.report.save", Component.literal(loc.getFileName().toString()).withStyle(s -> s
+                        .withClickEvent(new ClickEvent.OpenFile(loc.toString()))
+                        .applyFormat(ChatFormatting.UNDERLINE)))
                 .withStyle(s -> s
-                    .withColor(ChatFormatting.GREEN)));
-        }, client).exceptionallyAsync(e -> {
+                        .withColor(ChatFormatting.GREEN))), client).exceptionallyAsync(e -> {
             hud.addMessage(Component.translatable("pf.report.error", e.getMessage()).withStyle(s -> s.withColor(ChatFormatting.RED)));
             return null;
         }, client);
     }
 
-    private static Path getUniqueFileName(Path directory, String baseName, String ext) {
+    private static Path getUniqueFileName(Path directory, String baseName) {
         Path loc = null;
 
         int counter = 0;
         while (loc == null || Files.exists(loc)) {
-            loc = directory.resolve(baseName + (counter == 0 ? "" : "_" + counter) + ext);
+            loc = directory.resolve(baseName + (counter == 0 ? "" : "_" + counter) + ".json");
             counter++;
         }
 

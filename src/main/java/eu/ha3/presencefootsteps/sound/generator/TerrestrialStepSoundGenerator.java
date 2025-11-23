@@ -26,7 +26,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ArmorItem;
+
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
@@ -106,7 +106,7 @@ class TerrestrialStepSoundGenerator implements StepSoundGenerator {
         simulateAirborne();
         simulateBrushes();
         simulateStationary();
-        lastFallDistance = entity.fallDistance;
+        lastFallDistance = (float) entity.fallDistance;
     }
 
     protected void simulateStationary() {

@@ -15,7 +15,7 @@ license = "MIT"
 # A list of mods - how many allowed here is determined by the individual mod loader
 [[mods]] #mandatory
 modId = "presencefootsteps"
-version = "1.21.4-1.12.0-beta.1"
+version = "1.21.5-1.12.0-beta.1"
 displayName = "Presence Footsteps (NeoForge)"
 authors = "Hurricaaane (Ha3), Sollace, Paint_Ninja, ZCRAFT"
 logoFile="presencefootsteps_logo.png"
@@ -55,7 +55,7 @@ side = "BOTH"
 modId = "minecraft"
 type = "required"
 # This version range declares a minimum of the current minecraft version up to but not including the next major version
-versionRange = "[1.21.4,1.22)"
+versionRange = "[1.21.5,1.22)"
 ordering = "NONE"
 side = "BOTH"
 
