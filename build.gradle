@@ -28,13 +28,32 @@ neoForge {
 }
 
 dependencies {
-
+    jarJar(api("dev.ryanhcode.sable-companion:sable-companion-common-${project.minecraft_version}:[${project.sable_companion_version},)")) {
+        version {
+            prefer project.sable_companion_version
+        }
+    }
+    compileOnlyApi("dev.ryanhcode.sable:sable-common-${project.minecraft_version}:${project.sable_version}")
 }
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = "UTF-8"
 }
 
+repositories {
+    exclusiveContent { // Sable
+        forRepository {
+            maven {
+                url = "https://maven.ryanhcode.dev/releases"
+                name = "RyanHCode Maven"
+            }
+        }
+        filter {
+            includeGroup("dev.ryanhcode.sable")
+            includeGroup("dev.ryanhcode.sable-companion")
+        }
+    }
+}
 
 tasks.named('jar', Jar) {
     manifest {
