@@ -10,7 +10,6 @@ import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 
-//
 public final class SableCompat {
 
     @Nullable
@@ -18,7 +17,6 @@ public final class SableCompat {
         final Level level = entity.level();
         final SableCompanion companion = SableCompanion.INSTANCE;
 
-        // Probe the center of the block in world space.
         final Position probe = Vec3.atCenterOf(worldPos);
 
         return companion.runIncludingSubLevels(level, probe, true, null, (sl, projectedPos) -> {
