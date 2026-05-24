@@ -1,6 +1,7 @@
 package eu.ha3.presencefootsteps.world;
 
 import eu.ha3.presencefootsteps.compat.ContraptionCollidable;
+import eu.ha3.presencefootsteps.compat.SableCompat;
 import eu.ha3.presencefootsteps.sound.SoundEngine;
 import eu.ha3.presencefootsteps.util.PlayerUtil;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
@@ -35,10 +36,17 @@ public class PFSolver implements Solver {
         Level world = entity.level();
         BlockState state = world.getBlockState(pos);
 
-        if (state.isAir() && (entity instanceof ContraptionCollidable collidable)) {
-            state = collidable.getCollidedStateAt(pos);
+        if (state.isAir()) {
+            if (entity instanceof ContraptionCollidable collidable) {
+                state = collidable.getCollidedStateAt(pos);
+            }
+            else {
+                BlockState subLevelState = SableCompat.getSubLevelStateAt(entity, pos);
+                if (subLevelState != null) {
+                    state = subLevelState;
+                }
+            }
         }
-
         return state.getAppearance(world, pos, Direction.UP, state, pos);
     }
 
