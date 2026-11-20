@@ -104,7 +104,7 @@ class TerrestrialStepSoundGenerator implements StepSoundGenerator {
     }
 
     protected void simulateStationary() {
-        if (isImmobile && (entity.onGround() || !entity.isUnderWater()) && playbackImmobile()) {
+        if (isImmobile && entity.onGround() && playbackImmobile()) {
             Association assos = associations.findAssociation(0d, isRightFoot);
 
             if (!assos.isSilent() || !isImmobile) {
@@ -160,7 +160,7 @@ class TerrestrialStepSoundGenerator implements StepSoundGenerator {
         if (scalStat != scal < 0.001f) {
             scalStat = !scalStat;
 
-            if (scalStat && engine.getIsolator().variator().PLAY_WANDER && !hasStoppingConditions()) {
+            if (scalStat && entity.onGround() && engine.getIsolator().variator().PLAY_WANDER && !hasStoppingConditions()) {
                 playStep(associations.findAssociation(0, isRightFoot), State.WANDER);
             }
         }
