@@ -43,6 +43,16 @@ Note that you need **at least one** sounds pack enabled for the mod to function.
 
 ## Mod Support
 
+### External Footstep Timing (NeoForge 1.21.1)
+
+Client mods can subscribe to `eu.ha3.presencefootsteps.api.FootstepTimingEvent` on `NeoForge.EVENT_BUS` to control walking step timing without mixing into the sound generator. The event runs once per simulated entity per client tick, after motion tracking and before automatic walking steps. Use `getEntity()` to restrict control to the players your mod manages.
+
+Cancel the event with `setCanceled(true)` between animation beats. On a beat, leave it uncanceled and call `requestStep()` to request one walking step even if the usual distance threshold has not been reached. Repeated requests during the same event still produce at most one walking step; cancellation takes precedence. Ground, underwater, climbing, sneaking, material, footwear, volume, and left/right foot handling remain with Presence Footsteps. Airborne entities cannot be forced to take walking steps. Jumping, landing, foliage brushing, and stationary sounds keep their own timing.
+
+Listeners that leave the event unchanged preserve automatic timing. Only subscribe on the client when Presence Footsteps is installed. Existing `TerrestrialStepSoundGenerator#simulateFootsteps` mixins continue to work; remove the timing mixin when switching to this event.
+
+### Block Sounds
+
 Presence Footsteps will attempt to figure out the sounds of modded blocks by looking at the vanilla material/sound types they use.
 If your mod is using very unique sounds though, you can add mappings to your mod to directly control what sounds presence footsteps uses for your block by
 following the [guide on our wiki](https://github.com/Sollace/Presence-Footsteps/wiki/Information-for-Resourcepack-Creators)

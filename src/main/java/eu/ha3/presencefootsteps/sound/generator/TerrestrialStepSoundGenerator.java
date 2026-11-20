@@ -4,6 +4,7 @@ import net.minecraft.world.entity.EntityAttachment;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
+import eu.ha3.presencefootsteps.api.FootstepTimingEvent;
 import eu.ha3.presencefootsteps.config.Variator;
 import eu.ha3.presencefootsteps.mixins.ILivingEntity;
 import eu.ha3.presencefootsteps.sound.State;
@@ -21,6 +22,7 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ArmorItem;
+import net.neoforged.neoforge.common.NeoForge;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
@@ -96,6 +98,7 @@ class TerrestrialStepSoundGenerator implements StepSoundGenerator {
     @Override
     public void generateFootsteps() {
         motionTracker.simulateMotionData(entity);
+        stepThisFrame = false;
         simulateFootsteps();
         simulateAirborne();
         simulateBrushes();
@@ -140,13 +143,16 @@ class TerrestrialStepSoundGenerator implements StepSoundGenerator {
     }
 
     protected void simulateFootsteps() {
+        FootstepTimingEvent timing = NeoForge.EVENT_BUS.post(new FootstepTimingEvent(entity));
+        if (timing.isCanceled()) {
+            return;
+        }
+
         if (!(entity instanceof Player)) {
             entity.moveDist += (float)Math.sqrt(motionTracker.getHorizontalSpeed()) * 0.6f;
         }
 
         final float distanceReference = entity.moveDist;
-
-        stepThisFrame = false;
 
         if (dmwBase > distanceReference) {
             dmwBase = 0;
@@ -160,7 +166,7 @@ class TerrestrialStepSoundGenerator implements StepSoundGenerator {
         if (scalStat != scal < 0.001f) {
             scalStat = !scalStat;
 
-            if (scalStat && entity.onGround() && engine.getIsolator().variator().PLAY_WANDER && !hasStoppingConditions()) {
+            if (!timing.isStepRequested() && scalStat && entity.onGround() && engine.getIsolator().variator().PLAY_WANDER && !hasStoppingConditions()) {
                 playStep(associations.findAssociation(0, isRightFoot), State.WANDER);
             }
         }
@@ -213,7 +219,7 @@ class TerrestrialStepSoundGenerator implements StepSoundGenerator {
 
             distance *= ((PlayerUtil.getScale(entity) - 1) * 0.6F) + 1;
 
-            if (dwm > distance) {
+            if (timing.isStepRequested() || dwm > distance) {
                 produceStep(event, verticalOffsetAsMinus);
                 modifier.stepped(this, entity, event);
                 dmwBase = distanceReference;
