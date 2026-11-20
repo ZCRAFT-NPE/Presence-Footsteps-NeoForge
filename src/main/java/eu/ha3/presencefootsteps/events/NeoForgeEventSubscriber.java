@@ -2,16 +2,19 @@ package eu.ha3.presencefootsteps.events;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import eu.ha3.presencefootsteps.PFConfig;
+import eu.ha3.presencefootsteps.PFOptionsScreen;
 import eu.ha3.presencefootsteps.PresenceFootsteps;
 import eu.ha3.presencefootsteps.sound.SoundEngine;
 import net.minecraft.client.KeyMapping;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.ModList;
 import net.neoforged.fml.event.lifecycle.FMLConstructModEvent;
 import net.neoforged.fml.loading.FMLPaths;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
+import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.common.util.Lazy;
 import org.lwjgl.glfw.GLFW;
@@ -32,6 +35,8 @@ public final class NeoForgeEventSubscriber {
 
     private static void onConstruct(final FMLConstructModEvent event) {
         PresenceFootsteps.logger.info("Presence Footsteps starting");
+        ModList.get().getModContainerById(PresenceFootsteps.MOD_ID).orElseThrow()
+                .registerExtensionPoint(IConfigScreenFactory.class, (container, parent) -> new PFOptionsScreen(parent));
     }
 
     private static void onRegisterClientReloadListeners(final RegisterClientReloadListenersEvent event) {
@@ -53,10 +58,14 @@ public final class NeoForgeEventSubscriber {
 
     private static void onClientTick(final ClientTickEvent.Post event) {
         var mc = net.minecraft.client.Minecraft.getInstance();
+        if (PF.keyBinding != null && PF.config != null) {
+            while (PF.keyBinding.get().consumeClick()) {
+                if (mc.screen == null) {
+                    mc.setScreen(new PFOptionsScreen(null));
+                }
+            }
+        }
         if (mc.player != null && !mc.player.isRemoved()) {
-            // if (mc.screen == null && PF.keyBinding.get().isDown()) {
-            //     mc.setScreen(new PFOptionsScreen(mc.screen));
-            // }
             PF.engine.onFrame(mc, mc.player);
         }
     }

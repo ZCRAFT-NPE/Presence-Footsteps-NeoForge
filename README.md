@@ -31,6 +31,10 @@ Shulkers make the same creaky box noises as Shulker boxes, boats sound like wood
 
  ---
 
+## Volume Settings
+
+Press **F10** in-game, or select **Presence Footsteps → Config** in NeoForge's Mods menu, to adjust the global footstep volume and separate volumes for yourself, other players, hostile/passive entities, wet surfaces, and foliage. Changes apply immediately and are saved in `config/presencefootsteps/userconfig.json`. Set the global volume to 0 to disable Presence Footsteps sounds.
+
 ## Sound Packs
 
 Presence Footsteps is **fully customisable** with resource packs. The mod by default includes a pack with its own sounds
